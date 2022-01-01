@@ -7,13 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Office.Interop.Word;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace WordAutoDesktop
 {
     public partial class Form1 : Form
     {
-        private OpenFileDialog ofd;
+        private OpenFileDialog mainOfd;
+        private OpenFileDialog extraOfd;
 
         public Form1()
         {
@@ -22,7 +23,8 @@ namespace WordAutoDesktop
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            ofd = new OpenFileDialog();
+            mainOfd = new OpenFileDialog();
+            extraOfd = new OpenFileDialog();
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -37,24 +39,46 @@ namespace WordAutoDesktop
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (ofd.ShowDialog() == DialogResult.OK)
+            if (mainOfd.ShowDialog() == DialogResult.OK)
             {
-                label4.Text = ofd.FileName;
-                var helper = new WordHelper(ofd.FileName);
-
-                var items = new Dictionary<string, string>
-                {
-                    { "<TAG1>", textBox1.Text },
-                    { "<TAG2>", textBox2.Text },
-                };
-
-                helper.Process(items);
+                label4.Text = mainOfd.FileName;
             }
         }
 
         private void label4_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (extraOfd.ShowDialog() == DialogResult.OK)
+            {
+                label5.Text = extraOfd.FileName;
+            }
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var helper = new WordHelper(mainOfd.FileName);
+            var items = new Dictionary<string, string>
+                {
+                    { "<TAG1>", textBox1.Text },
+                    { "<TAG2>", textBox2.Text },
+                };
+
+            helper.Process(items);
+
+            if (label5.Text != "Не выбран")
+            {
+                var helper2 = new WordHelper(extraOfd.FileName);
+                helper2.ExtraProcess();
+            }
         }
     }
 }

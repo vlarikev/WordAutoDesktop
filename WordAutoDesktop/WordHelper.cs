@@ -76,5 +76,38 @@ namespace WordAutoDesktop
 
             return false;
         }
+
+        internal bool ExtraProcess()
+        {
+            Word.Application app = null;
+
+            try
+            {
+                app = new Word.Application();
+                Object file = fileInfo.FullName;
+
+                Object missing = Type.Missing;
+                app.Documents.Open(file);
+
+                object newFileName = Path.Combine(fileInfo.DirectoryName, "CREATED_TEST_" + fileInfo.Name);
+                app.ActiveDocument.SaveAs2(newFileName);
+                app.ActiveDocument.Close();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                if (app != null)
+                {
+                    app.Quit();
+                }
+            }
+
+            return false;
+        }
     }
 }
