@@ -15,6 +15,7 @@ namespace WordAutoDesktop
     {
         private OpenFileDialog mainOfd;
         private OpenFileDialog extraOfd;
+        private OpenFileDialog testOfd;
 
         public Form1()
         {
@@ -25,6 +26,7 @@ namespace WordAutoDesktop
         {
             mainOfd = new OpenFileDialog();
             extraOfd = new OpenFileDialog();
+            testOfd = new OpenFileDialog();
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -65,7 +67,7 @@ namespace WordAutoDesktop
 
         private void button3_Click(object sender, EventArgs e)
         {
-            var helper = new WordHelper(mainOfd.FileName);
+            var helper = new WordHelper(mainOfd.FileName, extraOfd.FileName);
             var items = new Dictionary<string, string>
                 {
                     { "<TAG1>", textBox1.Text },
@@ -73,12 +75,12 @@ namespace WordAutoDesktop
                 };
 
             helper.Process(items);
+        }
 
-            if (label5.Text != "Не выбран")
-            {
-                var helper2 = new WordHelper(extraOfd.FileName);
-                helper2.ExtraProcess();
-            }
+        private void button4_Click(object sender, EventArgs e)
+        {
+            var testHelper = new WordHelper();
+            testHelper.Test();
         }
     }
 }

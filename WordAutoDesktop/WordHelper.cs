@@ -10,39 +10,55 @@ namespace WordAutoDesktop
 {
     class WordHelper
     {
-        private FileInfo fileInfo;
-        public WordHelper(string fileName)
+        public WordHelper()
         {
-            if (File.Exists(fileName))
+
+        }
+
+        private FileInfo fileInfo1;
+        private FileInfo fileInfo2;
+        public WordHelper(string fileName1, string fileName2)
+        {
+            if (File.Exists(fileName1))
             {
-                fileInfo = new FileInfo(fileName);
+                fileInfo1 = new FileInfo(fileName1);
             }
             else
             {
-                throw new ArgumentException("File not found!");
+                throw new ArgumentException("Main file not found!");
+            }
+            if (File.Exists(fileName2))
+            {
+                fileInfo2 = new FileInfo(fileName2);
+            }
+            else
+            {
+                throw new ArgumentException("Extra file not found!");
             }
         }
 
         internal bool Process(Dictionary<string, string> items)
         {
             Word.Application app = null;
+            Word.Document doc1 = null;
 
             try
             {
                 app = new Word.Application();
-                Object file = fileInfo.FullName;
+                object file1 = fileInfo1.FullName;
+                object file2 = fileInfo2.FullName;
 
-                Object missing = Type.Missing;
-                app.Documents.Open(file);
+                object missing = Type.Missing;
+                doc1 = app.Documents.Open(file1, ReadOnly: true, Revert: true);
 
-                foreach(var item in items)
+                foreach (var item in items)
                 {
-                    Word.Find find = app.Selection.Find;
+                    Word.Find find = doc1.Application.Selection.Find;
                     find.Text = item.Key;
                     find.Replacement.Text = item.Value;
 
-                    Object wrap = Word.WdFindWrap.wdFindContinue;
-                    Object replace = Word.WdReplace.wdReplaceAll;
+                    object wrap = Word.WdFindWrap.wdFindContinue;
+                    object replace = Word.WdReplace.wdReplaceAll;
 
                     find.Execute(FindText: Type.Missing,
                         MatchCase: false,
@@ -56,9 +72,9 @@ namespace WordAutoDesktop
                         ReplaceWith: missing, Replace: replace);
                 }
 
-                Object newFileName = Path.Combine(fileInfo.DirectoryName, "CREATED_" + fileInfo.Name);
-                app.ActiveDocument.SaveAs2(newFileName);
-                app.ActiveDocument.Close();
+                object newFileName = Path.Combine(fileInfo1.DirectoryName, "CREATED_" + fileInfo1.Name);
+                doc1.Application.ActiveDocument.SaveAs2(newFileName);
+                doc1.Application.ActiveDocument.Close();
 
                 return true;
             }
@@ -76,22 +92,31 @@ namespace WordAutoDesktop
 
             return false;
         }
-
-        internal bool ExtraProcess()
+        public bool Test()
         {
             Word.Application app = null;
 
             try
             {
                 app = new Word.Application();
-                Object file = fileInfo.FullName;
+                object filePath = @"C:\Users\vlarikev\Desktop\WAD_Build\Extra File.docx";
 
-                Object missing = Type.Missing;
-                app.Documents.Open(file);
+                Word.Document doc = app.Documents.Open(filePath, ReadOnly: true, Visible: true);
 
-                object newFileName = Path.Combine(fileInfo.DirectoryName, "CREATED_TEST_" + fileInfo.Name);
-                app.ActiveDocument.SaveAs2(newFileName);
-                app.ActiveDocument.Close();
+                string keyWord1 = "KeyWord1";
+                string keyWord2 = "KeyWord2";
+
+                Word.Range range1 = doc.Content;
+                range1.Find.Execute(keyWord1);
+
+                Word.Range range2 = doc.Content;
+                range2.Find.Execute(keyWord2);
+
+                range1 = doc.Range(range1.End, range2.Start);
+                range1.Text = " RANGE ";
+
+                doc.SaveAs2(@"C:\Users\vlarikev\Desktop\WAD_Build\Extra File_CREATED.docx");
+                doc.Close();
 
                 return true;
             }
