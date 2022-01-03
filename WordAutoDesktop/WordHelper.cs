@@ -10,26 +10,21 @@ namespace WordAutoDesktop
 {
     class WordHelper
     {
-        public WordHelper()
+        private FileInfo fileMainInfo;
+        private FileInfo fileExtraInfo;
+        public WordHelper(string fileMainName, string fileExtraName)
         {
-
-        }
-
-        private FileInfo fileInfo1;
-        private FileInfo fileInfo2;
-        public WordHelper(string fileName1, string fileName2)
-        {
-            if (File.Exists(fileName1))
+            if (File.Exists(fileMainName))
             {
-                fileInfo1 = new FileInfo(fileName1);
+                fileMainInfo = new FileInfo(fileMainName);
             }
             else
             {
                 throw new ArgumentException("Main file not found!");
             }
-            if (File.Exists(fileName2))
+            if (File.Exists(fileExtraName))
             {
-                fileInfo2 = new FileInfo(fileName2);
+                fileExtraInfo = new FileInfo(fileExtraName);
             }
             else
             {
@@ -40,20 +35,40 @@ namespace WordAutoDesktop
         internal bool Process(Dictionary<string, string> items)
         {
             Word.Application app = null;
-            Word.Document doc1 = null;
 
             try
             {
                 app = new Word.Application();
-                object file1 = fileInfo1.FullName;
-                object file2 = fileInfo2.FullName;
+                object fileMain = fileMainInfo.FullName;
+                object fileExtra = fileExtraInfo.FullName;
 
                 object missing = Type.Missing;
-                doc1 = app.Documents.Open(file1, ReadOnly: true, Revert: true);
+
+                string keyWord1 = "KeyWord1";
+                string keyWord2 = "KeyWord2";
+
+                string placeWord1 = "PlaceWord1";
+
+                Word.Document docExtra = app.Documents.Open(fileExtra, ReadOnly: true, Visible: true);
+                Word.Range range1key = docExtra.Content;
+                range1key.Find.Execute(keyWord1);
+
+                Word.Range range2key = docExtra.Content;
+                range2key.Find.Execute(keyWord2);
+
+                Word.Range rangeExtraPart = docExtra.Content;
+                rangeExtraPart = docExtra.Range(range1key.End + 1, range2key.Start - 1);
+
+                Word.Document docMain = app.Documents.Open(fileMain, ReadOnly: true, Visible: true);
+                Word.Range rangePlaceWord = docMain.Content;
+
+                rangePlaceWord.Find.Execute(placeWord1);
+                rangePlaceWord = docMain.Range(rangePlaceWord.Start, rangePlaceWord.End);
+                rangePlaceWord.Text = rangeExtraPart.Text;
 
                 foreach (var item in items)
                 {
-                    Word.Find find = doc1.Application.Selection.Find;
+                    Word.Find find = docMain.Application.Selection.Find;
                     find.Text = item.Key;
                     find.Replacement.Text = item.Value;
 
@@ -72,56 +87,15 @@ namespace WordAutoDesktop
                         ReplaceWith: missing, Replace: replace);
                 }
 
-                object newFileName = Path.Combine(fileInfo1.DirectoryName, "CREATED_" + fileInfo1.Name);
-                doc1.Application.ActiveDocument.SaveAs2(newFileName);
-                doc1.Application.ActiveDocument.Close();
+                object newFileName = Path.Combine(fileMainInfo.DirectoryName, "CREATED_" + fileMainInfo.Name);
+                docMain.SaveAs2(newFileName);
+                docMain.Close();
+                docExtra.Close();
 
                 return true;
             }
             catch(Exception ex)
             { 
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                if (app != null)
-                {
-                    app.Quit();
-                }
-            }
-
-            return false;
-        }
-        public bool Test()
-        {
-            Word.Application app = null;
-
-            try
-            {
-                app = new Word.Application();
-                object filePath = @"C:\Users\vlarikev\Desktop\WAD_Build\Extra File.docx";
-
-                Word.Document doc = app.Documents.Open(filePath, ReadOnly: true, Visible: true);
-
-                string keyWord1 = "KeyWord1";
-                string keyWord2 = "KeyWord2";
-
-                Word.Range range1 = doc.Content;
-                range1.Find.Execute(keyWord1);
-
-                Word.Range range2 = doc.Content;
-                range2.Find.Execute(keyWord2);
-
-                range1 = doc.Range(range1.End, range2.Start);
-                range1.Text = " RANGE ";
-
-                doc.SaveAs2(@"C:\Users\vlarikev\Desktop\WAD_Build\Extra File_CREATED.docx");
-                doc.Close();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
                 Console.WriteLine(ex.Message);
             }
             finally

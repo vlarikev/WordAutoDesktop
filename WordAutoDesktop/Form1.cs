@@ -76,11 +76,5 @@ namespace WordAutoDesktop
 
             helper.Process(items);
         }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            var testHelper = new WordHelper();
-            testHelper.Test();
-        }
     }
 }
