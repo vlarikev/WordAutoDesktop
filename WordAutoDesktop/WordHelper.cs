@@ -12,6 +12,12 @@ namespace WordAutoDesktop
     {
         private FileInfo fileMainInfo;
         private FileInfo fileExtraInfo;
+
+        private string[] keyWordStartArray = new string[] { "KeyWord1", "Таблица 1. Первая таблица." };
+        private string[] keyWordEndArray = new string[]   { "KeyWord2", "Уникальный текст идет далее." };
+
+        private string[] placeWordsArray = new string[] { "PlaceWord1", "PlaceWord2" };
+
         public WordHelper(string fileMainName, string fileExtraName)
         {
             if (File.Exists(fileMainName))
@@ -44,27 +50,11 @@ namespace WordAutoDesktop
 
                 object missing = Type.Missing;
 
-                string keyWord1 = "KeyWord1";
-                string keyWord2 = "KeyWord2";
-
-                string placeWord1 = "PlaceWord1";
-
                 Word.Document docExtra = app.Documents.Open(fileExtra, ReadOnly: true, Visible: true);
-                Word.Range range1key = docExtra.Content;
-                range1key.Find.Execute(keyWord1);
-
-                Word.Range range2key = docExtra.Content;
-                range2key.Find.Execute(keyWord2);
-
-                Word.Range rangeExtraPart = docExtra.Content;
-                rangeExtraPart = docExtra.Range(range1key.End + 1, range2key.Start - 1);
-
                 Word.Document docMain = app.Documents.Open(fileMain, ReadOnly: true, Visible: true);
-                Word.Range rangePlaceWord = docMain.Content;
 
-                rangePlaceWord.Find.Execute(placeWord1);
-                rangePlaceWord = docMain.Range(rangePlaceWord.Start, rangePlaceWord.End);
-                rangePlaceWord.Text = rangeExtraPart.Text;
+                FindWordAndPasteToIt(docMain, placeWordsArray[0], FindPartBetweenKeywords(docExtra, keyWordStartArray[0], keyWordEndArray[0]));
+                FindWordAndPasteToIt(docMain, placeWordsArray[1], FindPartBetweenKeywords(docExtra, keyWordStartArray[1], keyWordEndArray[1]));
 
                 foreach (var item in items)
                 {
@@ -107,6 +97,28 @@ namespace WordAutoDesktop
             }
 
             return false;
+        }
+        private Word.Range FindWordAndPasteToIt(Word.Document docMain, string placeWord, Word.Range rangeExtraPart)
+        {
+            Word.Range rangePlaceWord = docMain.Content;
+
+            rangePlaceWord.Find.Execute(placeWord);
+            rangePlaceWord = docMain.Range(rangePlaceWord.Start, rangePlaceWord.End);
+            rangePlaceWord.Text = rangeExtraPart.Text;
+
+            return rangePlaceWord;
+        }
+        private Word.Range FindPartBetweenKeywords(Word.Document docExtra, string keyStart, string keyEnd)
+        {
+            Word.Range range1key = docExtra.Content;
+            range1key.Find.Execute(keyStart);
+
+            Word.Range range2key = docExtra.Content;
+            range2key.Find.Execute(keyEnd);
+
+            Word.Range rangeExtraPart = docExtra.Range(range1key.End + 1, range2key.Start - 1);
+
+            return rangeExtraPart;
         }
     }
 }
