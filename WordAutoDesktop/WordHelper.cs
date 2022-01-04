@@ -13,10 +13,16 @@ namespace WordAutoDesktop
         private FileInfo fileMainInfo;
         private FileInfo fileExtraInfo;
 
+        // Key and place words.
         private string[] keyWordStartArray = new string[] { "KeyWord1", "Таблица 1. Первая таблица." };
-        private string[] keyWordEndArray = new string[]   { "KeyWord2", "Уникальный текст идет далее." };
+        private string[] keyWordEndArray = new string[] { "KeyWord2", "Уникальный текст идет далее." };
 
         private string[] placeWordsArray = new string[] { "PlaceWord1", "PlaceWord2" };
+
+
+        // Table vatiables.
+        private string tableFontName = "Times New Roman";
+        private int tableFontSize = 10;
 
         public WordHelper(string fileMainName, string fileExtraName)
         {
@@ -98,13 +104,37 @@ namespace WordAutoDesktop
 
             return false;
         }
+
         private Word.Range FindWordAndPasteToIt(Word.Document docMain, string placeWord, Word.Range rangeExtraPart)
         {
             Word.Range rangePlaceWord = docMain.Content;
 
             rangePlaceWord.Find.Execute(placeWord);
             rangePlaceWord = docMain.Range(rangePlaceWord.Start, rangePlaceWord.End);
-            rangePlaceWord.Text = rangeExtraPart.Text;
+            
+            if (rangeExtraPart.Tables.Count == 0)
+            {
+                rangePlaceWord.Text = rangeExtraPart.Text;
+            }
+            else
+            {
+                rangeExtraPart.Copy();
+                Word.Table table = rangePlaceWord.Tables.Add(rangePlaceWord, 1, 1);
+                table.Range.Paste();
+
+                for (int i = 0; i < table.Rows.Count + 1; i++)
+                {
+                    for (int j = 0; j < table.Columns.Count + 1; j++)
+                    {
+                        Word.Cell cell = table.Cell(i, j);
+                        cell.Range.Font.Name = tableFontName;
+                        cell.Range.Font.Size = tableFontSize;
+                        cell.Range.Font.Bold = 0;
+                        cell.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+                        cell.VerticalAlignment = Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter;
+                    }
+                }
+            }
 
             return rangePlaceWord;
         }

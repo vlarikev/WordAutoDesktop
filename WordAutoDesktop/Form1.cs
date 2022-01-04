@@ -15,7 +15,6 @@ namespace WordAutoDesktop
     {
         private OpenFileDialog mainOfd;
         private OpenFileDialog extraOfd;
-        private OpenFileDialog testOfd;
 
         public Form1()
         {
@@ -26,7 +25,6 @@ namespace WordAutoDesktop
         {
             mainOfd = new OpenFileDialog();
             extraOfd = new OpenFileDialog();
-            testOfd = new OpenFileDialog();
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
