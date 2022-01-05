@@ -14,13 +14,16 @@ namespace WordAutoDesktop
         private FileInfo fileExtraInfo;
 
         // Key and place words.
-        private string[] keyWordStartArray = new string[] { "KeyWord1", "Таблица 1. Первая таблица." };
-        private string[] keyWordEndArray = new string[] { "KeyWord2", "Уникальный текст идет далее." };
+        private string[] keyWordStartArray = new string[] { "KeyWord1", "Таблица 1. Первая таблица.", "Далее идет рисунок." };
+        private string[] keyWordEndArray = new string[] { "KeyWord2", "Уникальный текст идет далее.", "Рисунок 1. Тестовый рисунок." };
 
-        private string[] placeWordsArray = new string[] { "PlaceWord1", "PlaceWord2" };
+        private string[] placeWordsArray = new string[] { "PlaceWord1", "PlaceWord2", "PlaceWord3" };
 
+        // Text variables.
+        private string textFontName = "Times New Roman";
+        private int textFontSize = 14;
 
-        // Table vatiables.
+        // Table variables.
         private string tableFontName = "Times New Roman";
         private int tableFontSize = 10;
 
@@ -61,6 +64,7 @@ namespace WordAutoDesktop
 
                 FindWordAndPasteToIt(docMain, placeWordsArray[0], FindPartBetweenKeywords(docExtra, keyWordStartArray[0], keyWordEndArray[0]));
                 FindWordAndPasteToIt(docMain, placeWordsArray[1], FindPartBetweenKeywords(docExtra, keyWordStartArray[1], keyWordEndArray[1]));
+                FindWordAndPasteToIt(docMain, placeWordsArray[2], FindPartBetweenKeywords(docExtra, keyWordStartArray[2], keyWordEndArray[2]));
 
                 foreach (var item in items)
                 {
@@ -112,11 +116,7 @@ namespace WordAutoDesktop
             rangePlaceWord.Find.Execute(placeWord);
             rangePlaceWord = docMain.Range(rangePlaceWord.Start, rangePlaceWord.End);
             
-            if (rangeExtraPart.Tables.Count == 0)
-            {
-                rangePlaceWord.Text = rangeExtraPart.Text;
-            }
-            else
+            if (rangeExtraPart.Tables.Count > 0)
             {
                 rangeExtraPart.Copy();
                 Word.Table table = rangePlaceWord.Tables.Add(rangePlaceWord, 1, 1);
@@ -134,6 +134,18 @@ namespace WordAutoDesktop
                         cell.VerticalAlignment = Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter;
                     }
                 }
+            }
+            else if (rangeExtraPart.InlineShapes.Count > 0)
+            {
+                rangeExtraPart.Copy();
+                rangePlaceWord.Paste();
+                rangePlaceWord.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+            }
+            else
+            {
+                rangePlaceWord.Text = rangeExtraPart.Text;
+                rangePlaceWord.Font.Name = textFontName;
+                rangePlaceWord.Font.Size = textFontSize;
             }
 
             return rangePlaceWord;
