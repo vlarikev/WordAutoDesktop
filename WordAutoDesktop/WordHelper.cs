@@ -71,6 +71,7 @@ namespace WordAutoDesktop
                     Word.Find find = docMain.Application.Selection.Find;
                     find.Text = item.Key;
                     find.Replacement.Text = item.Value;
+                    TextStylization(find.Replacement.Font, find.Replacement.ParagraphFormat, false);
 
                     object wrap = Word.WdFindWrap.wdFindContinue;
                     object replace = Word.WdReplace.wdReplaceAll;
@@ -83,7 +84,7 @@ namespace WordAutoDesktop
                         MatchAllWordForms: false,
                         Forward: true,
                         Wrap: wrap,
-                        Format: false,
+                        Format: true,
                         ReplaceWith: missing, Replace: replace);
                 }
 
@@ -122,17 +123,21 @@ namespace WordAutoDesktop
                 Word.Table table = rangePlaceWord.Tables.Add(rangePlaceWord, 1, 1);
                 table.Range.Paste();
 
-                for (int i = 0; i < table.Rows.Count + 1; i++)
+                for (int i = 0; i < table.Columns.Count + 1; i++)
                 {
-                    for (int j = 0; j < table.Columns.Count + 1; j++)
+                    for (int j = 0; j < table.Rows.Count + 1; j++)
                     {
-                        Word.Cell cell = table.Cell(i, j);
-                        cell.Range.Font.Name = tableFontName;
-                        cell.Range.Font.Size = tableFontSize;
+                        Word.Cell cell = table.Cell(j, i);
+
                         cell.Range.Font.Bold = 0;
                         cell.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
                         cell.VerticalAlignment = Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter;
+
+                        TextStylization(cell.Range.Font, cell.Range.ParagraphFormat, true);
                     }
+
+                    Word.Cell cellRow = table.Cell(1, i);
+                    cellRow.Range.Font.Bold = 1;
                 }
             }
             else if (rangeExtraPart.InlineShapes.Count > 0)
@@ -144,8 +149,7 @@ namespace WordAutoDesktop
             else
             {
                 rangePlaceWord.Text = rangeExtraPart.Text;
-                rangePlaceWord.Font.Name = textFontName;
-                rangePlaceWord.Font.Size = textFontSize;
+                TextStylization(rangePlaceWord.Font, rangePlaceWord.ParagraphFormat, false);
             }
 
             return rangePlaceWord;
@@ -161,6 +165,27 @@ namespace WordAutoDesktop
             Word.Range rangeExtraPart = docExtra.Range(range1key.End + 1, range2key.Start - 1);
 
             return rangeExtraPart;
+        }
+        private void TextStylization(Word.Font font, Word.ParagraphFormat paragraphFormat, bool isTable)
+        {
+            if (isTable)
+            {
+                font.Name = tableFontName;
+                font.Size = tableFontSize;
+            }
+            else
+            {
+                font.Name = textFontName;
+                font.Size = textFontSize;
+            }
+
+            paragraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphJustify;
+            paragraphFormat.LeftIndent = 0;
+            paragraphFormat.RightIndent = 0;
+            paragraphFormat.FirstLineIndent = 35.5f;
+            paragraphFormat.SpaceBefore = 0;
+            paragraphFormat.SpaceAfter = 0;
+            paragraphFormat.LineSpacingRule = Word.WdLineSpacing.wdLineSpaceSingle;
         }
     }
 }
